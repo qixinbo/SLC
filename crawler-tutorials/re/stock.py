@@ -3,17 +3,17 @@ from bs4 import BeautifulSoup
 import re
 import traceback
 
-def getHTMLText(url):
+def getHTMLText(url, code='utf-8'):
 	try:
 		r = requests.get(url, timeout = 30)
 		r.raise_for_status()
-		r.encoding = r.apparent_encoding
+		r.encoding = code
 		return r.text
 	except:
 		return ""
 
 def getStockList(lst, stockURL):
-	html = getHTMLText(stockURL)
+	html = getHTMLText(stockURL, 'GB2312')
 	soup = BeautifulSoup(html, "html.parser")
 	a = soup.find_all('a')
 	for i in a:
@@ -24,6 +24,7 @@ def getStockList(lst, stockURL):
 			continue
 
 def getStockInfo(lst, stockURL, fpath):
+	count = 0
 	for stock in lst:
 		url = stockURL + stock + ".html"
 		html = getHTMLText(url)
@@ -43,7 +44,11 @@ def getStockInfo(lst, stockURL, fpath):
 				infoDict[key] = val
 			with open(fpath, 'a', encoding='utf-8') as f:
 				f.write(str(infoDict) + '\n')
+				count = count + 1
+				print('\rCurrent Progress: {:.2f}%'.format(count*100/len(lst)), end='')
 		except:
+			count = count + 1
+			print('\rCurrent Progress: {:.2f}%'.format(count*100/len(lst)), end='')
 			# traceback.print_exc()
 			continue
 
